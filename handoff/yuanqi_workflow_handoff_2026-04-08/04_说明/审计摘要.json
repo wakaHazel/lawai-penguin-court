@@ -1,0 +1,44 @@
+{
+  "date": "2026-04-08",
+  "latest_package": "01_可导入包/企鹅法庭元器导入包_正式版.zip",
+  "generator": "02_脚本/generate_penguin_yuanqi_formal_package.py",
+  "workflows": [
+    {
+      "name": "W00_企鹅法庭主控编排",
+      "start_param_count": 21,
+      "empty_default_count": 0
+    },
+    {
+      "name": "W01_庭审场景生成",
+      "start_param_count": 14,
+      "empty_default_count": 0
+    },
+    {
+      "name": "W02_法律支持检索",
+      "start_param_count": 4,
+      "empty_default_count": 0
+    },
+    {
+      "name": "W03_对方行为模拟",
+      "start_param_count": 12,
+      "empty_default_count": 0
+    },
+    {
+      "name": "W04_结果分析复盘",
+      "start_param_count": 15,
+      "empty_default_count": 0
+    }
+  ],
+  "runtime_chain_status": {
+    "code1_inputs_bound": true,
+    "code1_output_properties_bound": true,
+    "code2_answer_text_bound": true,
+    "answer_node_bound": true,
+    "end_node_bound": true
+  },
+  "known_gap": {
+    "variable_xlsx_only_header": true,
+    "workflow_reference_xlsx_only_header": true,
+    "most_likely_unresolved_area": "元器UI层对工作流级变量/启动工作流输入变量的识别规则"
+  }
+}

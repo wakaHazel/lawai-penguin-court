@@ -1,0 +1,151 @@
+{
+  "generated_at": "2026-04-15",
+  "source_package": "E:\\lawai\\export-W00_企鹅法庭主控编排等.zip",
+  "notes": [
+    "This manifest is extracted from the real Yuanqi export package.",
+    "Secrets from plugin headers are intentionally omitted here."
+  ],
+  "workflows": [
+    {
+      "internal_key": "master_orchestration",
+      "workflow_id": "e1256571-6359-4ce1-a4a1-d22c2981ead3",
+      "workflow_name": "W00_企鹅法庭主控编排",
+      "description": "主控编排，负责按阶段分流并汇总最终展示",
+      "start_inputs": [
+        "current_stage",
+        "selected_action",
+        "round_number",
+        "v_case_summary",
+        "v_case_type",
+        "v_focus_issues",
+        "v_fact_keywords",
+        "v_opponent_role",
+        "v_opponent_arguments",
+        "v_historical_dialogs",
+        "case_id"
+      ],
+      "end_outputs": [
+        "final_out",
+        "branch_name"
+      ]
+    },
+    {
+      "internal_key": "courtroom_scene_generation",
+      "workflow_id": "c960a070-d34a-41c0-a7ca-7fb5585e27a6",
+      "workflow_name": "W01_庭审场景生成",
+      "description": "生成当前庭审回合场景",
+      "start_inputs": [
+        "current_stage",
+        "v_case_summary",
+        "round_number",
+        "v_historical_dialogs"
+      ],
+      "end_outputs": [
+        "scene_payload"
+      ]
+    },
+    {
+      "internal_key": "legal_support_retrieval",
+      "workflow_id": "068acc40-bce9-4ff9-8b63-8df0673eec96",
+      "workflow_name": "W02_法律支持检索",
+      "description": "通过得理插件检索法条与案例并总结",
+      "start_inputs": [
+        "case_id",
+        "case_type",
+        "focus_issues_json",
+        "fact_keywords_json"
+      ],
+      "end_outputs": [
+        "legal_payload"
+      ],
+      "transform_notes": [
+        "W02 contains an internal code node that splits comma-delimited strings into arrays.",
+        "Do not send list values directly if you want to match the exported workflow contract."
+      ]
+    },
+    {
+      "internal_key": "opponent_behavior_simulation",
+      "workflow_id": "23685364-ca55-40e9-a7e9-d801cba4f727",
+      "workflow_name": "W03_对方行为模拟",
+      "description": "生成对方律师反应与风险变化",
+      "start_inputs": [
+        "v_opponent_role",
+        "v_current_stage",
+        "v_selected_action",
+        "v_likely_arguments",
+        "v_focus_issues"
+      ],
+      "end_outputs": [
+        "opponent_payload"
+      ]
+    },
+    {
+      "internal_key": "outcome_analysis_report",
+      "workflow_id": "e8259bb4-a3d4-481b-84b6-d9c7cc2ff70d",
+      "workflow_name": "W04_胜诉率分析与复盘",
+      "description": "生成复盘报告",
+      "start_inputs": [
+        "v_case_profile",
+        "v_legal_support_summary",
+        "v_simulation_timeline",
+        "v_opponent_behavior"
+      ],
+      "end_outputs": [
+        "report_payload"
+      ],
+      "dependency_notes": [
+        "W04 depends on upstream legal-summary and opponent-behavior outputs.",
+        "Current backend workflow_hints cannot directly satisfy the exported W04 contract without an adapter/merger layer."
+      ]
+    }
+  ],
+  "w00_routes": [
+    {
+      "match_stage_values": [
+        "prepare"
+      ],
+      "branch_name": "prepare",
+      "pipeline": [
+        "W01_庭审场景生成",
+        "大模型1",
+        "代码1"
+      ]
+    },
+    {
+      "match_stage_values": [
+        "investigation",
+        "evidence",
+        "debate"
+      ],
+      "branch_name": "trial",
+      "pipeline": [
+        "W01_庭审场景生成",
+        "W02_法律支持检索",
+        "W03_对方行为模拟",
+        "大模型2",
+        "代码1"
+      ]
+    },
+    {
+      "match_stage_values": [
+        "report_ready"
+      ],
+      "branch_name": "report",
+      "pipeline": [
+        "W02_法律支持检索",
+        "W03_对方行为模拟",
+        "W04_胜诉率分析与复盘",
+        "大模型3",
+        "代码1"
+      ]
+    }
+  ],
+  "uncovered_stages_in_w00": [
+    "final_statement",
+    "mediation_or_judgment"
+  ],
+  "security_warnings": [
+    "The exported W02 plugin nodes contain hardcoded Deli appid/secret in the raw JSON package.",
+    "Treat the exported package as sensitive and rotate credentials before wider sharing."
+  ]
+}

@@ -1,0 +1,60 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Runtime logs / temp
+*.log
+*.err.log
+*.out.log
+*.pid
+.playwright-mcp/
+output/
+tmp/
+
+# Local databases and state
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Project-local generated state
+data/generated-cg/
+data/penguin_court.db
+data/penguin_court.db-shm
+data/penguin_court.db-wal
+
+# Deployment / platform
+.vercel/
+
+# Local exports and transient design captures
+exports/
+/export-W*.zip
+/*.png
+/temp_*.png

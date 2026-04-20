@@ -1,0 +1,122 @@
+{
+  "project": "企鹅法庭",
+  "provider": "得理开放平台",
+  "notes": [
+    "这份规格描述的是元器里的工具层，不属于当前 workflow zip 自动导入范围。",
+    "appid 和 secret 统一放在 Header，不依赖单一 ApiKey 授权假设。",
+    "search_case 的 keywordArr 必须是数组。",
+    "search_law 返回法规列表，不返回完整法规正文；需要继续调用 get_law_info。"
+  ],
+  "tools": [
+    {
+      "name": "search_case",
+      "description": "按关键词检索案例列表",
+      "method": "POST",
+      "url": "https://openapi.delilegal.com/api/qa/v3/search/queryListCase",
+      "headers": [
+        {
+          "name": "appid",
+          "required": true,
+          "location": "header"
+        },
+        {
+          "name": "secret",
+          "required": true,
+          "location": "header"
+        }
+      ],
+      "body_type": "JSON",
+      "body_template": {
+        "pageNo": 1,
+        "pageSize": 5,
+        "sortField": "correlation",
+        "sortOrder": "desc",
+        "condition": {
+          "keywordArr": [
+            "{{keyword}}"
+          ]
+        }
+      },
+      "dynamic_fields": [
+        {
+          "field": "condition.keywordArr",
+          "type": "string_array",
+          "placeholder": "{{keyword}}"
+        }
+      ],
+      "test_input": "工伤 交通事故 上下班途中"
+    },
+    {
+      "name": "search_law",
+      "description": "按关键词检索法律法规",
+      "method": "POST",
+      "url": "https://openapi.delilegal.com/api/qa/v3/search/queryListLaw",
+      "headers": [
+        {
+          "name": "appid",
+          "required": true,
+          "location": "header"
+        },
+        {
+          "name": "secret",
+          "required": true,
+          "location": "header"
+        }
+      ],
+      "body_type": "JSON",
+      "body_template": {
+        "pageNo": 1,
+        "pageSize": 5,
+        "sortField": "correlation",
+        "sortOrder": "desc",
+        "condition": {
+          "keywords": [
+            "{{keyword}}"
+          ],
+          "fieldName": "semantic"
+        }
+      },
+      "dynamic_fields": [
+        {
+          "field": "condition.keywords",
+          "type": "string_array",
+          "placeholder": "{{keyword}}"
+        }
+      ],
+      "test_input": "劳动合同 双倍工资 未签订书面合同"
+    },
+    {
+      "name": "get_law_info",
+      "description": "根据 law_id 查询法规详情",
+      "method": "GET",
+      "url": "https://openapi.delilegal.com/api/qa/v3/search/lawInfo?lawId={{law_id}}&merge=true",
+      "headers": [
+        {
+          "name": "appid",
+          "required": true,
+          "location": "header"
+        },
+        {
+          "name": "secret",
+          "required": true,
+          "location": "header"
+        }
+      ],
+      "query_params": [
+        {
+          "name": "lawId",
+          "required": true,
+          "type": "string",
+          "placeholder": "{{law_id}}"
+        },
+        {
+          "name": "merge",
+          "required": true,
+          "type": "boolean_string",
+          "fixed_value": "true"
+        }
+      ],
+      "test_input": "2c72a796165cc8e3e6c6de801200a710"
+    }
+  ]
+}

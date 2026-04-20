@@ -1,0 +1,93 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from fastapi.testclient import TestClient
+
+from apps.api.app.main import app
+
+
+def test_simulation_turn_walks_full_node_sequence_and_stops_at_report_ready() -> None:
+    client = TestClient(app)
+
+    case_payload = {
+        "domain": "civil",
+        "case_type": "private_lending",
+        "title": "民间借贷纠纷",
+        "summary": "原告主张被告尚欠借款未还。",
+        "user_perspective_role": "claimant_side",
+        "user_goals": ["simulate_trial"],
+        "parties": [
+            {"role": "plaintiff", "display_name": "张三"},
+            {"role": "defendant", "display_name": "李四"},
+        ],
+        "claims": ["请求判令被告偿还借款本金及利息"],
+        "core_facts": ["2025-03-01 原告向被告转账 5 万元"],
+        "timeline_events": [],
+        "focus_issues": ["是否存在真实借贷合意"],
+        "evidence_items": [],
+        "missing_evidence": [],
+        "opponent_profile": {
+            "role": "defendant",
+            "display_name": "李四",
+            "likely_arguments": ["否认借贷合意"],
+            "likely_evidence": ["聊天记录"],
+            "likely_strategies": ["拖延答辩"],
+        },
+        "notes": "测试完整状态流转。",
+    }
+
+    created = client.post("/api/cases", json=case_payload)
+    case_id = created.json()["data"]["case_id"]
+
+    started = client.post(f"/api/cases/{case_id}/simulate/start")
+    current = started.json()["data"]
+
+    expected_sequence = [
+        ("prepare", 2),
+        ("investigation", 3),
+        ("investigation", 4),
+        ("investigation", 5),
+        ("evidence", 6),
+        ("evidence", 7),
+        ("evidence", 8),
+        ("debate", 9),
+        ("debate", 10),
+        ("debate", 11),
+        ("final_statement", 12),
+        ("mediation_or_judgment", 13),
+        ("report_ready", 14),
+    ]
+
+    for stage, turn_index in expected_sequence:
+        advanced = client.post(
+            f"/api/cases/{case_id}/simulate/turn",
+            json={
+                "simulation_id": current["simulation_id"],
+                "current_stage": current["current_stage"],
+                "turn_index": current["turn_index"],
+                "selected_action": current["available_actions"][0],
+            },
+        )
+        assert advanced.status_code == 200
+        current = advanced.json()["data"]
+        assert current["current_stage"] == stage
+        assert current["turn_index"] == turn_index
+
+    locked = client.post(
+        f"/api/cases/{case_id}/simulate/turn",
+        json={
+            "simulation_id": current["simulation_id"],
+            "current_stage": current["current_stage"],
+            "turn_index": current["turn_index"],
+            "selected_action": "继续推进",
+        },
+    )
+    locked_body = locked.json()
+
+    assert locked.status_code == 409
+    assert locked_body["success"] is False
+    assert locked_body["message"] == "simulation_already_completed"
+    assert locked_body["error_code"] == "simulation_already_completed"
+    assert locked_body["data"] is None

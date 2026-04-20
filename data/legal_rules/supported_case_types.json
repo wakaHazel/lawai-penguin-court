@@ -1,0 +1,95 @@
+{
+  "version": "2026-04-07",
+  "domains": [
+    {
+      "value": "civil",
+      "label": "民事",
+      "enabled_case_types": [
+        "private_lending",
+        "labor_dispute",
+        "divorce_dispute",
+        "tort_liability"
+      ]
+    },
+    {
+      "value": "criminal",
+      "label": "刑事",
+      "enabled_case_types": []
+    },
+    {
+      "value": "administrative",
+      "label": "行政",
+      "enabled_case_types": []
+    }
+  ],
+  "case_types": [
+    {
+      "value": "private_lending",
+      "label": "民间借贷",
+      "domain": "civil",
+      "mvp_priority": true,
+      "common_user_goals": [
+        "simulate_trial",
+        "analyze_win_rate",
+        "prepare_checklist",
+        "review_evidence"
+      ],
+      "recommended_focus_issues": [
+        "是否存在真实借贷合意",
+        "出借金额是否成立",
+        "利息约定是否合法有效"
+      ]
+    },
+    {
+      "value": "labor_dispute",
+      "label": "劳动争议",
+      "domain": "civil",
+      "mvp_priority": true,
+      "common_user_goals": [
+        "simulate_trial",
+        "analyze_win_rate",
+        "prepare_checklist",
+        "review_evidence"
+      ],
+      "recommended_focus_issues": [
+        "是否存在劳动关系",
+        "是否存在违法解除",
+        "工资或补偿计算是否准确"
+      ]
+    },
+    {
+      "value": "divorce_dispute",
+      "label": "离婚纠纷",
+      "domain": "civil",
+      "mvp_priority": true,
+      "common_user_goals": [
+        "simulate_trial",
+        "analyze_win_rate",
+        "prepare_checklist",
+        "review_evidence"
+      ],
+      "recommended_focus_issues": [
+        "感情是否确已破裂",
+        "子女抚养安排",
+        "夫妻共同财产分割"
+      ]
+    },
+    {
+      "value": "tort_liability",
+      "label": "侵权责任",
+      "domain": "civil",
+      "mvp_priority": true,
+      "common_user_goals": [
+        "simulate_trial",
+        "analyze_win_rate",
+        "prepare_checklist",
+        "review_evidence"
+      ],
+      "recommended_focus_issues": [
+        "是否存在侵权行为",
+        "因果关系是否成立",
+        "损害赔偿范围是否合理"
+      ]
+    }
+  ]
+}

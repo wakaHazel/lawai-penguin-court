@@ -1,0 +1,35 @@
+W00_企鹅法庭主控编排 默认测试输入
+
+case_id = CASE-001
+simulation_id = SIM-001
+current_stage = prepare
+turn_index = 1
+selected_action = submit_evidence
+branch_focus = 劳动关系是否成立
+case_type = 劳动争议
+v_case_type = 劳动争议
+v_case_title = 未签劳动合同双倍工资争议
+v_case_summary = 申请人主张其在某科技公司从事运营工作，接受日常考勤和工作安排管理，但双方一直未签订书面劳动合同，现要求确认劳动关系并支付未签劳动合同双倍工资差额。
+v_notes = 申请人目前已掌握部分微信工作沟通记录和转账截图，但缺少完整考勤记录、社保缴纳记录和正式人事材料。
+focus_issues_json = ["劳动关系是否成立","工资支付证据是否充分"]
+claims_json = ["确认劳动关系","支付未签劳动合同双倍工资差额"]
+missing_evidence_json = ["工资流水","考勤记录","社保缴纳记录"]
+fact_keywords_json = ["工资流水","考勤记录","微信工作群记录","工牌","社保缴纳记录"]
+opponent_arguments_json = ["双方系合作关系，不存在劳动关系","转账性质为项目报酬而非工资"]
+opponent_role = defendant
+opponent_name = 某科技公司
+likely_arguments_json = ["双方系劳务合作","不存在管理从属性","转账并非固定工资"]
+likely_evidence_json = ["合作协议","转账记录备注","项目结算记录"]
+likely_strategies_json = ["否认劳动关系","弱化管理从属性","强调项目合作自主性"]
+
+说明：
+
+- 所有 `*_json` 字段都必须保持为合法 JSON 字符串
+- `current_stage` 建议只用：
+  - prepare
+  - investigation
+  - evidence
+  - debate
+  - final_statement
+  - mediation_or_judgment
+  - report_ready
