@@ -23,8 +23,6 @@ function Stop-ListeningProcessForPort {
 
 if (-not (Test-Path $apiEnvLocal)) {
 @"
-V3CM_API_KEY=sk-fyBslUC9BeZDrSVS5e3d68A34aE346778111D073E39d971f
-V3CM_BASE_URL=https://api.v3.cm/v1
 PENGUIN_CG_MODE=static
 "@ | Set-Content -Path $apiEnvLocal -Encoding UTF8
 }

@@ -1,23 +1,50 @@
 from __future__ import annotations
 
 import sqlite3
+import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
 
 _ROOT_DIR = Path(__file__).resolve().parents[3]
-_DATA_DIR = _ROOT_DIR / "data"
-_DATABASE_PATH = _DATA_DIR / "penguin_court.db"
+_DEFAULT_RUNTIME_DATA_DIR = _ROOT_DIR / "data"
+_DEFAULT_STATIC_ASSETS_DIR = _ROOT_DIR / "data"
+
+
+def get_workspace_root() -> Path:
+    return _ROOT_DIR
+
+
+def get_runtime_data_dir() -> Path:
+    configured_dir = os.getenv("PENGUIN_RUNTIME_DATA_DIR", "").strip()
+    return Path(configured_dir) if configured_dir else _DEFAULT_RUNTIME_DATA_DIR
+
+
+def get_static_assets_dir() -> Path:
+    configured_dir = os.getenv("PENGUIN_STATIC_ASSETS_DIR", "").strip()
+    return Path(configured_dir) if configured_dir else _DEFAULT_STATIC_ASSETS_DIR
+
+
+def get_generated_cg_dir() -> Path:
+    return get_runtime_data_dir() / "generated-cg"
+
+
+def get_static_cg_library_dir() -> Path:
+    return get_static_assets_dir() / "cg-library"
 
 
 def get_database_path() -> Path:
-    return _DATABASE_PATH
+    return get_runtime_data_dir() / "penguin_court.db"
 
 
 def initialize_database() -> None:
-    _DATA_DIR.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(_DATABASE_PATH) as connection:
+    runtime_data_dir = get_runtime_data_dir()
+    runtime_data_dir.mkdir(parents=True, exist_ok=True)
+    get_generated_cg_dir().mkdir(parents=True, exist_ok=True)
+    database_path = get_database_path()
+
+    with sqlite3.connect(database_path) as connection:
         connection.execute("PRAGMA journal_mode=WAL;")
         connection.execute("PRAGMA foreign_keys=ON;")
         connection.execute(
@@ -194,7 +221,7 @@ def initialize_database() -> None:
 @contextmanager
 def get_connection() -> Iterator[sqlite3.Connection]:
     initialize_database()
-    connection = sqlite3.connect(_DATABASE_PATH)
+    connection = sqlite3.connect(get_database_path())
     connection.row_factory = sqlite3.Row
     try:
         connection.execute("PRAGMA foreign_keys=ON;")

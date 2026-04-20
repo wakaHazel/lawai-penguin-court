@@ -52,9 +52,9 @@ function resolveDefaultBaseUrl(): string | null {
     return null;
   }
 
-  // In a public static deployment, absence of an explicit API base URL should
-  // degrade into local mock mode instead of hard-coding localhost.
-  return null;
+  // When frontend and backend are deployed on the same origin, the safest
+  // default is using relative API paths instead of requiring extra config.
+  return "";
 }
 
 const DEFAULT_TIMEOUT_MS = 15000;

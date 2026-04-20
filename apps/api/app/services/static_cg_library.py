@@ -3,12 +3,12 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from ..database import get_static_cg_library_dir
 from ..schemas.case import CaseProfile
 from ..schemas.turn import SimulationCgScene, SimulationSnapshot
 
 
-_ROOT_DIR = Path(__file__).resolve().parents[4]
-_DEFAULT_LIBRARY_DIR = _ROOT_DIR / "data" / "cg-library" / "cartoon-court"
+_DEFAULT_LIBRARY_DIR = get_static_cg_library_dir() / "cartoon-court"
 _DEFAULT_MODE = "static"
 
 _STAGE_IMAGE_MAP = {

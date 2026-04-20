@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 
 from openai import OpenAI
 
+from ..database import get_generated_cg_dir
 from ..schemas.case import CaseProfile
 from ..schemas.turn import SimulationCgScene, SimulationSnapshot
 
@@ -46,7 +47,7 @@ class GeminiImageClient:
         self.timeout_seconds = timeout_seconds
         self.api_style = (api_style or "auto").strip().lower()
         self.image_size = image_size.strip() or _DEFAULT_IMAGE_SIZE
-        self.output_dir = output_dir or Path(__file__).resolve().parents[4] / "data" / "generated-cg"
+        self.output_dir = output_dir or get_generated_cg_dir()
 
     @classmethod
     def from_env(cls) -> "GeminiImageClient":

@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: lawai-penguin-court
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    healthCheckPath: /health
+    disk:
+      name: penguin-court-runtime
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PENGUIN_RUNTIME_DATA_DIR
+        value: /var/data/runtime
+      - key: PENGUIN_SIMULATION_MODE
+        value: local
+      - key: PENGUIN_LIVE_PROVIDER
+        value: yuanqi
+      - key: PENGUIN_CG_MODE
+        value: static
+      - key: PENGUIN_STATIC_ASSETS_DIR
+        value: /app/data
+      - key: YUANQI_APP_ID
+        sync: false
+      - key: YUANQI_APP_KEY
+        sync: false
+      - key: DELILEGAL_APP_ID
+        sync: false
+      - key: DELILEGAL_SECRET
+        sync: false
+      - key: ZHIPU_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
