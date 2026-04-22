@@ -41,6 +41,19 @@ function isLikelyStandaloneFrontendOrigin(origin: string): boolean {
   }
 }
 
+function isGitHubPagesOrigin(origin: string): boolean {
+  if (!origin) {
+    return false;
+  }
+
+  try {
+    const url = new URL(origin);
+    return url.hostname.endsWith(".github.io");
+  } catch {
+    return false;
+  }
+}
+
 function resolveDefaultBaseUrl(): string | null {
   const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
   if (configuredBaseUrl) {
@@ -48,7 +61,10 @@ function resolveDefaultBaseUrl(): string | null {
   }
 
   const runtimeOrigin = readRuntimeOrigin();
-  if (isLikelyStandaloneFrontendOrigin(runtimeOrigin)) {
+  if (
+    isLikelyStandaloneFrontendOrigin(runtimeOrigin) ||
+    isGitHubPagesOrigin(runtimeOrigin)
+  ) {
     return null;
   }
 

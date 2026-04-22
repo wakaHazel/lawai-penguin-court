@@ -106,7 +106,7 @@ class YuanqiResponseMergerTests(unittest.TestCase):
         self.assertIn("庄严的企鹅法庭内", merged.scene_text)
         self.assertEqual(merged.yuanqi_branch_name, "prepare")
         self.assertEqual(len(merged.suggested_actions), 2)
-        self.assertEqual(len(merged.action_cards), 2)
+        self.assertEqual(len(merged.action_cards), 0)
 
 
 if __name__ == "__main__":

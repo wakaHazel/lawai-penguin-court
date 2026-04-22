@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 
 from fastapi import APIRouter, HTTPException
 
@@ -65,6 +66,8 @@ _OUTCOME_HINT_STAGES = {
 }
 _LIVE_SIMULATION_MODES = {"live", "hybrid", "remote"}
 _YUANQI_FIRST_PROVIDERS = {"yuanqi", "yuanqi_only", "default"}
+_YUANQI_RETRY_COOLDOWN_SECONDS = 180
+_YUANQI_DISABLED_UNTIL = 0.0
 
 
 @router.post("/{case_id}/simulate/start", response_model=ResponseEnvelope)
@@ -452,16 +455,21 @@ def maybe_execute_yuanqi(
                 degraded_flags.append("zhipu_call_failed")
             snapshot = snapshot.model_copy(update={"degraded_flags": degraded_flags})
 
+    if _is_yuanqi_temporarily_disabled():
+        return snapshot
+
     if not _YUANQI_CLIENT.is_enabled():
         return snapshot
 
     try:
         response = _YUANQI_CLIENT.create_turn_completion(request_payload)
+        _clear_yuanqi_temporary_disable()
         return _YUANQI_RESPONSE_MERGER.merge_snapshot(
             snapshot=snapshot,
             response=response,
         )
     except (ValueError, YuanqiClientError):
+        _mark_yuanqi_temporarily_disabled()
         degraded_flags = list(snapshot.degraded_flags)
         if "yuanqi_call_failed" not in degraded_flags:
             degraded_flags.append("yuanqi_call_failed")
@@ -478,6 +486,31 @@ def _get_live_simulation_provider() -> str:
     if not provider:
         return "yuanqi"
     return provider
+
+
+def _get_yuanqi_retry_cooldown_seconds() -> int:
+    raw_value = os.getenv(
+        "YUANQI_RETRY_COOLDOWN_SECONDS",
+        str(_YUANQI_RETRY_COOLDOWN_SECONDS),
+    ).strip()
+    try:
+        return max(0, int(raw_value))
+    except ValueError:
+        return _YUANQI_RETRY_COOLDOWN_SECONDS
+
+
+def _is_yuanqi_temporarily_disabled() -> bool:
+    return time.time() < _YUANQI_DISABLED_UNTIL
+
+
+def _mark_yuanqi_temporarily_disabled() -> None:
+    global _YUANQI_DISABLED_UNTIL
+    _YUANQI_DISABLED_UNTIL = time.time() + _get_yuanqi_retry_cooldown_seconds()
+
+
+def _clear_yuanqi_temporary_disable() -> None:
+    global _YUANQI_DISABLED_UNTIL
+    _YUANQI_DISABLED_UNTIL = 0.0
 
 
 def _resolve_user_input_entries(

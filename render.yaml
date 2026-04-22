@@ -5,7 +5,7 @@ services:
     plan: starter
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    autoDeploy: true
+    autoDeployTrigger: commit
     healthCheckPath: /health
     disk:
       name: penguin-court-runtime
@@ -15,13 +15,27 @@ services:
       - key: PENGUIN_RUNTIME_DATA_DIR
         value: /var/data/runtime
       - key: PENGUIN_SIMULATION_MODE
-        value: local
+        value: live
       - key: PENGUIN_LIVE_PROVIDER
         value: yuanqi
       - key: PENGUIN_CG_MODE
         value: static
       - key: PENGUIN_STATIC_ASSETS_DIR
         value: /app/data
+      - key: YUANQI_TIMEOUT_SECONDS
+        value: 25
+      - key: YUANQI_RETRY_COOLDOWN_SECONDS
+        value: 180
+      - key: ZHIPU_TIMEOUT_SECONDS
+        value: 12
+      - key: DELILEGAL_TIMEOUT_SECONDS
+        value: 8
+      - key: PENGUIN_YUANQI_HISTORY_TURN_LIMIT
+        value: 6
+      - key: PENGUIN_YUANQI_HISTORY_CHAR_LIMIT
+        value: 1200
+      - key: PENGUIN_YUANQI_INCLUDE_SUPPLEMENTAL_PROMPT
+        value: false
       - key: YUANQI_APP_ID
         sync: false
       - key: YUANQI_APP_KEY

@@ -45,7 +45,7 @@ class ZhipuClient:
         api_key: str | None,
         base_url: str = _DEFAULT_BASE_URL,
         model: str = _DEFAULT_MODEL,
-        timeout_seconds: int = 30,
+        timeout_seconds: int = 12,
         max_tokens: int = _DEFAULT_MAX_TOKENS,
         temperature: float = _DEFAULT_TEMPERATURE,
         transport: Callable[[str, bytes, dict[str, str], int], dict[str, Any]] | None = None,
@@ -64,7 +64,7 @@ class ZhipuClient:
             api_key=os.getenv("ZHIPU_API_KEY") or os.getenv("GLM_API_KEY"),
             base_url=os.getenv("ZHIPU_BASE_URL") or os.getenv("ZHIPU_API_URL") or _DEFAULT_BASE_URL,
             model=os.getenv("ZHIPU_MODEL", _DEFAULT_MODEL),
-            timeout_seconds=int(os.getenv("ZHIPU_TIMEOUT_SECONDS", "30")),
+            timeout_seconds=int(os.getenv("ZHIPU_TIMEOUT_SECONDS", "12")),
             max_tokens=int(os.getenv("ZHIPU_MAX_TOKENS", str(_DEFAULT_MAX_TOKENS))),
             temperature=float(os.getenv("ZHIPU_TEMPERATURE", str(_DEFAULT_TEMPERATURE))),
         )

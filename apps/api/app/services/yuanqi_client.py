@@ -22,7 +22,7 @@ class YuanqiClient:
         api_key: str | None,
         assistant_id: str | None,
         endpoint: str = _DEFAULT_ENDPOINT,
-        timeout_seconds: int = 30,
+        timeout_seconds: int = 25,
         transport: Callable[[str, bytes, dict[str, str], int], dict[str, Any]] | None = None,
     ) -> None:
         self.api_key = api_key or ""
@@ -37,7 +37,7 @@ class YuanqiClient:
             api_key=os.getenv("YUANQI_APP_KEY") or os.getenv("YUANQI_API_KEY"),
             assistant_id=os.getenv("YUANQI_APP_ID") or os.getenv("YUANQI_ASSISTANT_ID"),
             endpoint=os.getenv("YUANQI_API_URL", _DEFAULT_ENDPOINT),
-            timeout_seconds=int(os.getenv("YUANQI_TIMEOUT_SECONDS", "30")),
+            timeout_seconds=int(os.getenv("YUANQI_TIMEOUT_SECONDS", "25")),
         )
 
     def is_enabled(self) -> bool:

@@ -238,12 +238,12 @@ export function buildTrialNarrativeFlow(
 export function getNarrativeBeatDelay(beat: TrialNarrativeBeat): number {
   const baseline =
     beat.tone === "cinematic"
-      ? 760
+      ? 420
       : beat.tone === "pressure"
-        ? 900
-        : 820;
-  const scaled = beat.text.length * 26;
-  return Math.min(2200, Math.max(baseline, scaled));
+        ? 560
+        : 480;
+  const scaled = beat.text.length * 14;
+  return Math.min(1150, Math.max(baseline, scaled));
 }
 
 function normalizeChoicePrompt(value: string | null | undefined): string {

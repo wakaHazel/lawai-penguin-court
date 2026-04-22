@@ -66,14 +66,7 @@ class SimulationUserInputContextTests(unittest.TestCase):
             len(json.loads(invocation.variables["user_input_entries_json"])),
             2,
         )
-        self.assertEqual(
-            len(request.messages[0].content),
-            2,
-        )
-        self.assertIn(
-            "主管要求我每天早上九点前打卡",
-            request.messages[0].content[1].text,
-        )
+        self.assertEqual(len(request.messages[0].content), 1)
 
     def test_context_store_includes_user_inputs_in_historical_dialogs(self) -> None:
         snapshot = self._build_snapshot_with_inputs()

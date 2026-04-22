@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 
 from ..schemas.common import CaseParticipantRole, CaseType
 from ..schemas.case import CaseProfile
@@ -257,6 +258,13 @@ class YuanqiPayloadAdapter:
         )
 
     def _build_user_input_prompt(self, variables: dict[str, str]) -> str:
+        include_prompt = os.getenv(
+            "PENGUIN_YUANQI_INCLUDE_SUPPLEMENTAL_PROMPT",
+            "false",
+        ).strip().lower() in {"1", "true", "yes", "on"}
+        if not include_prompt:
+            return ""
+
         latest_text = (variables.get("latest_user_input_text") or "").strip()
         stage_inputs_text = (variables.get("stage_user_inputs_text") or "").strip()
         if not latest_text and not stage_inputs_text:

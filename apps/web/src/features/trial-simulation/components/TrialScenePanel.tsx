@@ -30,9 +30,52 @@ interface TrialScenePanelProps {
 }
 
 const DEGRADED_FLAG_LABELS: Record<string, string> = {
-  deli_call_failed: "法律检索接口未返回，当前依据为本地兜底推演。",
   gemini_cg_failed: "插画分镜生成失败，已切回基础庭审场景。",
 };
+
+const HIDDEN_DEGRADED_FLAGS = new Set([
+  "static_cg_applied",
+  "yuanqi_call_failed",
+  "zhipu_call_failed",
+  "deli_call_failed",
+]);
+
+function readRuntimeOrigin(): string {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return window.location.origin;
+}
+
+function isLikelyStandaloneFrontendOrigin(origin: string): boolean {
+  if (!origin) {
+    return false;
+  }
+
+  try {
+    const url = new URL(origin);
+    return (
+      (url.hostname === "127.0.0.1" || url.hostname === "localhost") &&
+      ["4173", "4174", "4175", "5173"].includes(url.port)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isGitHubPagesOrigin(origin: string): boolean {
+  if (!origin) {
+    return false;
+  }
+
+  try {
+    const url = new URL(origin);
+    return url.hostname.endsWith(".github.io");
+  } catch {
+    return false;
+  }
+}
 
 function resolveBackendAssetUrl(value: string | undefined | null): string | undefined {
   if (typeof value !== "string") {
@@ -52,13 +95,25 @@ function resolveBackendAssetUrl(value: string | undefined | null): string | unde
   const backendOrigin = configuredBaseUrl
     ? configuredBaseUrl.replace(/\/+$/, "")
     : "";
+  const runtimeOrigin = readRuntimeOrigin();
+  const requiresExternalBackend =
+    isLikelyStandaloneFrontendOrigin(runtimeOrigin) ||
+    isGitHubPagesOrigin(runtimeOrigin);
 
   if (normalized.startsWith("/")) {
-    return backendOrigin ? `${backendOrigin}${normalized}` : normalized;
+    if (backendOrigin) {
+      return `${backendOrigin}${normalized}`;
+    }
+
+    return requiresExternalBackend ? undefined : normalized;
   }
 
   const relativePath = normalized.replace(/^\/+/, "");
-  return backendOrigin ? `${backendOrigin}/${relativePath}` : `/${relativePath}`;
+  if (backendOrigin) {
+    return `${backendOrigin}/${relativePath}`;
+  }
+
+  return requiresExternalBackend ? undefined : `/${relativePath}`;
 }
 
 function joinClassNames(...values: Array<string | false | null | undefined>): string {
@@ -250,8 +305,8 @@ export function TrialScenePanel({
       fallbackStageImageUrl(snapshot?.current_stage),
   );
   const visibleFlags = degradedFlags
-    .filter((flag) => flag !== "static_cg_applied")
-    .map((flag) => DEGRADED_FLAG_LABELS[flag] ?? flag)
+    .filter((flag) => !HIDDEN_DEGRADED_FLAGS.has(flag))
+    .map((flag) => DEGRADED_FLAG_LABELS[flag])
     .filter((flag) => flag.trim().length > 0);
   const visibleNarrativeBeats = visibleBeats.length > 0
     ? visibleBeats

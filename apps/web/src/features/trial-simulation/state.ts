@@ -86,15 +86,12 @@ export function buildTrialSimulationPageState(
   const secondaryActions =
     snapshot.current_stage === "report_ready" ? [] : actionPool.slice(3);
   const nextStageHint = normalizeText(snapshot.next_stage_hint);
-  const actionCards =
-    Array.isArray(snapshot.action_cards) && snapshot.action_cards.length > 0
-      ? snapshot.action_cards.filter((card) => card.action.trim().length > 0)
-      : primaryActions.map((action, index) => ({
-          action,
-          intent: suggestedActions[index] ?? "",
-          risk_tip: "",
-          emphasis: index === 0 ? "critical" : "steady",
-        }));
+  const actionCards = buildSafeActionCards({
+    availableActions,
+    suggestedActions,
+    snapshotActionCards: snapshot.action_cards,
+    fallbackActions: primaryActions,
+  });
 
   return {
     caseProfile,
@@ -124,6 +121,58 @@ export function buildTrialSimulationPageState(
       snapshot.current_stage !== "report_ready" &&
       actionPool.length > 0,
   };
+}
+
+function buildSafeActionCards({
+  availableActions,
+  suggestedActions,
+  snapshotActionCards,
+  fallbackActions,
+}: {
+  availableActions: string[];
+  suggestedActions: string[];
+  snapshotActionCards: SimulationActionCard[] | undefined;
+  fallbackActions: string[];
+}): SimulationActionCard[] {
+  const allowedActions = new Set(availableActions);
+
+  if (Array.isArray(snapshotActionCards) && snapshotActionCards.length > 0) {
+    const normalizedCards = snapshotActionCards
+      .map((card) => ({
+        ...card,
+        action: card.action.trim(),
+      }))
+      .filter((card) => card.action.length > 0);
+
+    const validCards = normalizedCards.filter((card) => {
+      if (typeof card.choice_id === "string" && card.choice_id.trim().length > 0) {
+        return true;
+      }
+
+      return allowedActions.has(card.action);
+    });
+
+    if (validCards.length > 0) {
+      const deduped = new Set<string>();
+      return validCards.filter((card) => {
+        const key = card.choice_id?.trim().length
+          ? `choice:${card.choice_id}`
+          : `action:${card.action}`;
+        if (deduped.has(key)) {
+          return false;
+        }
+        deduped.add(key);
+        return true;
+      });
+    }
+  }
+
+  return fallbackActions.map((action, index) => ({
+    action,
+    intent: suggestedActions[index] ?? "",
+    risk_tip: "",
+    emphasis: index === 0 ? "critical" : "steady",
+  }));
 }
 
 export function buildSimulationTurnRequest(

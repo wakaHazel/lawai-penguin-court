@@ -21,6 +21,10 @@ class YuanqiResponseMerger:
     ) -> SimulationSnapshot:
         merged = self.extract_result(response)
         scene = self._ensure_dict(merged.scene)
+        action_cards = self._align_action_cards_to_snapshot(
+            snapshot=snapshot,
+            cards=self._to_action_cards(scene.get("action_cards")),
+        )
 
         return snapshot.model_copy(
             update={
@@ -40,8 +44,7 @@ class YuanqiResponseMerger:
                 "suggested_actions": self._to_string_list(
                     scene.get("suggested_actions")
                 ),
-                "action_cards": self._to_action_cards(scene.get("action_cards"))
-                or snapshot.action_cards,
+                "action_cards": action_cards or snapshot.action_cards,
                 "next_stage_hint": str(scene.get("next_stage_hint") or ""),
                 "legal_support": self._ensure_dict(merged.legal_support),
                 "opponent": self._ensure_dict(merged.opponent),
@@ -327,3 +330,53 @@ class YuanqiResponseMerger:
                 )
             )
         return cards
+
+    def _align_action_cards_to_snapshot(
+        self,
+        *,
+        snapshot: SimulationSnapshot,
+        cards: list[SimulationActionCard],
+    ) -> list[SimulationActionCard]:
+        """Keep only Yuanqi action cards that can safely advance this workflow node."""
+
+        if not cards:
+            return []
+
+        allowed_actions = set(snapshot.available_actions)
+        canonical_by_choice_id = {
+            card.choice_id: card.action
+            for card in snapshot.action_cards
+            if card.choice_id and card.action
+        }
+        choice_id_by_action = {
+            card.action: card.choice_id
+            for card in snapshot.action_cards
+            if card.choice_id and card.action
+        }
+
+        aligned_cards: list[SimulationActionCard] = []
+        seen: set[str] = set()
+        for card in cards:
+            choice_id = card.choice_id.strip() if card.choice_id else None
+            if choice_id and choice_id in canonical_by_choice_id:
+                canonical_action = canonical_by_choice_id[choice_id]
+            elif card.action in allowed_actions:
+                canonical_action = card.action
+                choice_id = choice_id_by_action.get(card.action) or choice_id
+            else:
+                continue
+
+            marker = choice_id or canonical_action
+            if marker in seen:
+                continue
+            seen.add(marker)
+            aligned_cards.append(
+                card.model_copy(
+                    update={
+                        "choice_id": choice_id,
+                        "action": canonical_action,
+                    }
+                )
+            )
+
+        return aligned_cards

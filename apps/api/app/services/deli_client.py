@@ -25,7 +25,7 @@ class DeliClient:
         app_id: str | None,
         secret: str | None,
         base_url: str = _DEFAULT_BASE_URL,
-        timeout_seconds: int = 20,
+        timeout_seconds: int = 8,
         transport: Callable[[Request, int], dict[str, Any]] | None = None,
     ) -> None:
         self.app_id = (app_id or "").strip()
@@ -33,6 +33,8 @@ class DeliClient:
         self.base_url = base_url.rstrip("/")
         self.timeout_seconds = timeout_seconds
         self._transport = transport or _default_transport
+        self._law_query_cache: dict[tuple[str, int], list[dict[str, Any]]] = {}
+        self._case_query_cache: dict[tuple[str, int], list[dict[str, Any]]] = {}
 
     @classmethod
     def from_env(cls) -> "DeliClient":
@@ -47,13 +49,18 @@ class DeliClient:
             app_id=app_id,
             secret=secret,
             base_url=os.getenv("DELILEGAL_BASE_URL", _DEFAULT_BASE_URL),
-            timeout_seconds=int(os.getenv("DELILEGAL_TIMEOUT_SECONDS", "20")),
+            timeout_seconds=int(os.getenv("DELILEGAL_TIMEOUT_SECONDS", "8")),
         )
 
     def is_enabled(self) -> bool:
         return bool(self.app_id and self.secret)
 
     def query_laws(self, keyword: str, *, page_size: int = 3) -> list[dict[str, Any]]:
+        cache_key = (keyword.strip(), page_size)
+        cached = self._law_query_cache.get(cache_key)
+        if cached is not None:
+            return [dict(item) for item in cached]
+
         payload = {
             "pageNo": 1,
             "pageSize": page_size,
@@ -69,9 +76,16 @@ class DeliClient:
             path="/api/qa/v3/search/queryListLaw",
             payload=payload,
         )
-        return self._extract_result_items(response)
+        result_items = self._extract_result_items(response)
+        self._law_query_cache[cache_key] = [dict(item) for item in result_items]
+        return [dict(item) for item in result_items]
 
     def query_cases(self, keyword: str, *, page_size: int = 3) -> list[dict[str, Any]]:
+        cache_key = (keyword.strip(), page_size)
+        cached = self._case_query_cache.get(cache_key)
+        if cached is not None:
+            return [dict(item) for item in cached]
+
         payload = {
             "pageNo": 1,
             "pageSize": page_size,
@@ -84,7 +98,9 @@ class DeliClient:
             path="/api/qa/v3/search/queryListCase",
             payload=payload,
         )
-        return self._extract_result_items(response)
+        result_items = self._extract_result_items(response)
+        self._case_query_cache[cache_key] = [dict(item) for item in result_items]
+        return [dict(item) for item in result_items]
 
     def get_law_info(self, law_id: str) -> dict[str, Any]:
         response = self._request(

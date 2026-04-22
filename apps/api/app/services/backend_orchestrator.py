@@ -161,9 +161,20 @@ class BackendOrchestrator:
         try:
             laws: list[dict[str, Any]] = []
             cases: list[dict[str, Any]] = []
-            for query in queries[:2]:
-                laws.extend(self._normalize_search_results(self._deli_client.query_laws(query), "law"))
-                cases.extend(self._normalize_search_results(self._deli_client.query_cases(query), "case"))
+            query_budget = self._build_legal_query_budget(snapshot.current_stage)
+            for query in queries[:query_budget]:
+                laws.extend(
+                    self._normalize_search_results(
+                        self._deli_client.query_laws(query, page_size=2),
+                        "law",
+                    )
+                )
+                cases.extend(
+                    self._normalize_search_results(
+                        self._deli_client.query_cases(query, page_size=2),
+                        "case",
+                    )
+                )
             payload.update(
                 {
                     "retrieval_mode": "direct_api",
@@ -180,6 +191,17 @@ class BackendOrchestrator:
             return payload, []
         except DeliClientError:
             return payload, ["deli_call_failed"]
+
+    def _build_legal_query_budget(self, current_stage: TrialStage) -> int:
+        if current_stage == TrialStage.REPORT_READY:
+            return 2
+        if current_stage in {
+            TrialStage.EVIDENCE,
+            TrialStage.DEBATE,
+            TrialStage.MEDIATION_OR_JUDGMENT,
+        }:
+            return 1
+        return 0
 
     def _build_opponent(
         self,
