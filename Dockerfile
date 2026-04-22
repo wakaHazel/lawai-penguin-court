@@ -24,8 +24,9 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 COPY . /app
 COPY --from=web-build /build/apps/web/dist /app/apps/web/dist
 
-RUN mkdir -p /app/runtime-data /app/data/cg-library /app/data/generated-cg
+RUN mkdir -p /app/runtime-data /app/data/cg-library /app/data/generated-cg && \
+    chmod -R 777 /app
 
-EXPOSE 8000
+EXPOSE 7860
 
-CMD ["/bin/sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["/bin/sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
